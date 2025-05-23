@@ -100,7 +100,12 @@ function drawLeftEyeFilled(predictions) {
 }
 
 function draw() {
+  // 鏡面反轉攝影機畫面
+  push();
+  translate(width, 0);
+  scale(-1, 1);
   image(video, 0, 0, width, height);
+  pop();
 
   if (predictions.length > 0) {
     const keypoints = predictions[0].scaledMesh;
@@ -113,7 +118,7 @@ function draw() {
     for (let i = 0; i < indices.length; i++) {
       const idx = indices[i];
       const [x, y] = keypoints[idx];
-      vertex(x, y);
+      vertex(width - x, y); // X座標鏡像
     }
     endShape();
 
@@ -125,7 +130,7 @@ function draw() {
     for (let i = 0; i < indices2.length; i++) {
       const idx = indices2[i];
       const [x, y] = keypoints[idx];
-      vertex(x, y);
+      vertex(width - x, y); // X座標鏡像
     }
     endShape(CLOSE);
 
@@ -137,17 +142,87 @@ function draw() {
     for (let i = 0; i < indices.length; i++) {
       const idx = indices[i];
       const [x, y] = keypoints[idx];
-      vertex(x, y);
+      vertex(width - x, y); // X座標鏡像
     }
     // 再畫第二組（反向，避免交錯）
     for (let i = indices2.length - 1; i >= 0; i--) {
       const idx = indices2[i];
       const [x, y] = keypoints[idx];
-      vertex(x, y);
+      vertex(width - x, y); // X座標鏡像
     }
     endShape(CLOSE);
 
-    drawLeftEyeLines(predictions);
-    drawLeftEyeFilled(predictions);
+    drawLeftEyeLinesMirror(predictions);
+    drawLeftEyeFilledMirror(predictions);
+  }
+}
+
+// 新增鏡像版本的左眼繪製
+function drawLeftEyeLinesMirror(predictions) {
+  if (predictions.length > 0) {
+    const keypoints = predictions[0].scaledMesh;
+    stroke(0, 255, 0);
+    strokeWeight(2);
+    for (let i = 0; i < leftEyeIndices.length - 1; i++) {
+      const idxA = leftEyeIndices[i];
+      const idxB = leftEyeIndices[i + 1];
+      const [x1, y1] = keypoints[idxA];
+      const [x2, y2] = keypoints[idxB];
+      line(width - x1, y1, width - x2, y2);
+    }
+    // 串接最後一點到第一點
+    const [xStart, yStart] = keypoints[leftEyeIndices[0]];
+    const [xEnd, yEnd] = keypoints[leftEyeIndices[leftEyeIndices.length - 1]];
+    line(width - xEnd, yEnd, width - xStart, yStart);
+
+    // 計算外框
+    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+    for (let i = 0; i < leftEyeIndices.length; i++) {
+      const idx = leftEyeIndices[i];
+      const [x, y] = keypoints[idx];
+      const mx = width - x;
+      if (mx < minX) minX = mx;
+      if (y < minY) minY = y;
+      if (mx > maxX) maxX = mx;
+      if (y > maxY) maxY = y;
+    }
+    // 畫紅色方框
+    noFill();
+    stroke(255, 0, 0);
+    strokeWeight(2);
+    rect(minX, minY, maxX - minX, maxY - minY);
+  }
+}
+
+function drawLeftEyeFilledMirror(predictions) {
+  if (predictions.length > 0) {
+    const keypoints = predictions[0].scaledMesh;
+    fill(255, 0, 0);
+    stroke(0, 255, 0);
+    strokeWeight(2);
+    beginShape();
+    for (let i = 0; i < leftEyeIndices.length; i++) {
+      const idx = leftEyeIndices[i];
+      const [x, y] = keypoints[idx];
+      vertex(width - x, y);
+    }
+    endShape(CLOSE);
+
+    // 計算外框
+    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+    for (let i = 0; i < leftEyeIndices.length; i++) {
+      const idx = leftEyeIndices[i];
+      const [x, y] = keypoints[idx];
+      const mx = width - x;
+      if (mx < minX) minX = mx;
+      if (y < minY) minY = y;
+      if (mx > maxX) maxX = mx;
+      if (y > maxY) maxY = y;
+    }
+    // 畫紅色方框
+    noFill();
+    stroke(255, 0, 0);
+    strokeWeight(2);
+    rect(minX, minY, maxX - minX, maxY - minY);
   }
 }

@@ -17,7 +17,6 @@ function setup() {
 
   // 初始化 facemesh（注意大小寫）
   facemesh = ml5.faceMesh(video, modelReady);
-  facemesh.on('predict', gotResults);
 }
 
 function centerCanvas() {
@@ -32,10 +31,12 @@ function windowResized() {
 
 function modelReady() {
   console.log('Facemesh model loaded!');
+  facemesh.predict(gotResults); // 正確啟動預測
 }
 
 function gotResults(results) {
   predictions = results;
+  facemesh.predict(gotResults); // 持續預測
 }
 
 function draw() {

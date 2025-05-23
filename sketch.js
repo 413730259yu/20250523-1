@@ -24,6 +24,7 @@ function setup() {
 
 function modelReady() {
   // 模型載入完成，可選擇顯示訊息
+  // 不需要 facemesh.predict()
 }
 
 function drawLeftEyeLines(predictions) {

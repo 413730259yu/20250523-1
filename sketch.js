@@ -7,6 +7,9 @@ const indices2 = [76,77,90,180,85,16,315,404,320,307,306,408,304,303,302,11,72,7
 // 左眼點位編號
 const leftEyeIndices = [243,190,56,28,27,29,30,247,130,25,110,24,23,22,26,112];
 
+// 右眼點位編號
+const rightEyeIndices = [133,173,157,158,159,160,161,246,33,7,163,144,145,153,154,155];
+
 function setup() {
   createCanvas(640, 480).position(
     (windowWidth - 640) / 2,
@@ -155,6 +158,7 @@ function draw() {
 
     drawLeftEyeLinesMirror(predictions);
     drawLeftEyeFilledMirror(predictions);
+    drawRightEyeFilledMirror(predictions);
   }
 }
 
@@ -213,6 +217,40 @@ function drawLeftEyeFilledMirror(predictions) {
     let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
     for (let i = 0; i < leftEyeIndices.length; i++) {
       const idx = leftEyeIndices[i];
+      const [x, y] = keypoints[idx];
+      const mx = width - x;
+      if (mx < minX) minX = mx;
+      if (y < minY) minY = y;
+      if (mx > maxX) maxX = mx;
+      if (y > maxY) maxY = y;
+    }
+    // 畫紅色方框
+    noFill();
+    stroke(255, 0, 0);
+    strokeWeight(2);
+    rect(minX, minY, maxX - minX, maxY - minY);
+  }
+}
+
+// 鏡像右眼繪製（紅色填滿，綠色線條，紅色外框）
+function drawRightEyeFilledMirror(predictions) {
+  if (predictions.length > 0) {
+    const keypoints = predictions[0].scaledMesh;
+    fill(255, 0, 0);
+    stroke(0, 255, 0);
+    strokeWeight(2);
+    beginShape();
+    for (let i = 0; i < rightEyeIndices.length; i++) {
+      const idx = rightEyeIndices[i];
+      const [x, y] = keypoints[idx];
+      vertex(width - x, y);
+    }
+    endShape(CLOSE);
+
+    // 計算外框
+    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+    for (let i = 0; i < rightEyeIndices.length; i++) {
+      const idx = rightEyeIndices[i];
       const [x, y] = keypoints[idx];
       const mx = width - x;
       if (mx < minX) minX = mx;
